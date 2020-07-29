@@ -347,6 +347,7 @@
     var nextWorkInProgressHook;
 
     if (workInProgressHook === null) {
+      // currentlyRenderingFiber$1.memoizedState 什么时候置为空的？
       nextWorkInProgressHook = currentlyRenderingFiber$1.memoizedState;
     } else {
       nextWorkInProgressHook = workInProgressHook.next;
@@ -637,15 +638,18 @@
     var componentUpdateQueue = currentlyRenderingFiber$1.updateQueue;
 
     if (componentUpdateQueue === null) {
+      // 创建函数组件更新队列挂载到work-in-process fiber的updateQueue上
       componentUpdateQueue = createFunctionComponentUpdateQueue();
       currentlyRenderingFiber$1.updateQueue = componentUpdateQueue;
+      // 将第一个effect加入循环链表
       componentUpdateQueue.lastEffect = effect.next = effect;
     } else {
       var lastEffect = componentUpdateQueue.lastEffect;
-
+// 什么时候会出现lastEffect为null的情况？？
       if (lastEffect === null) {
         componentUpdateQueue.lastEffect = effect.next = effect;
       } else {
+        // 将最新的effect加入循环链表
         var firstEffect = lastEffect.next;
         lastEffect.next = effect;
         effect.next = firstEffect;
