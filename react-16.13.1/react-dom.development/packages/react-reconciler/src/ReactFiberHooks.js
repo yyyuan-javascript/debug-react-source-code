@@ -676,6 +676,7 @@
   }
 
   function mountEffectImpl(fiberEffectTag, hookEffectTag, create, deps) {
+  // 创建一个新的hook,添加到hook链表末尾并返回作为workInProcessHook
     var hook = mountWorkInProgressHook();
     var nextDeps = deps === undefined ? null : deps;
     currentlyRenderingFiber$1.effectTag |= fiberEffectTag;

@@ -97,8 +97,9 @@
     var root = container._reactRootContainer;
     var fiberRoot;
 
-    if (!root) {
+    if (!root) {// 首次渲染root不存在，进入该分支
       // Initial mount
+      // 创建
       root = container._reactRootContainer = legacyCreateRootFromDOMContainer(container, forceHydrate);
       fiberRoot = root._internalRoot;
 
@@ -194,7 +195,7 @@
         error('You are calling ReactDOM.render() on a container that was previously ' + 'passed to ReactDOM.createRoot(). This is not supported. ' + 'Did you mean to call root.render(element)?');
       }
     }
-
+    // ReactDOM.render 实际调用该方法
     return legacyRenderSubtreeIntoContainer(null, element, container, false, callback);
   }
   function unstable_renderSubtreeIntoContainer(parentComponent, element, containerNode, callback) {
