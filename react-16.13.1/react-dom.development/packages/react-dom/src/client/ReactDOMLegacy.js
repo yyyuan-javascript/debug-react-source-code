@@ -99,7 +99,7 @@
 
     if (!root) {// 首次渲染root不存在，进入该分支
       // Initial mount
-      // 创建
+      // 创建ReactRoot
       root = container._reactRootContainer = legacyCreateRootFromDOMContainer(container, forceHydrate);
       fiberRoot = root._internalRoot;
 
@@ -112,11 +112,11 @@
         };
       } // Initial mount should not be batched.
 
-
+// 作用？？？
       unbatchedUpdates(function () {
         updateContainer(children, fiberRoot, parentComponent, callback);
       });
-    } else {
+    } else {// 非首次渲染
       fiberRoot = root._internalRoot;
 
       if (typeof callback === 'function') {

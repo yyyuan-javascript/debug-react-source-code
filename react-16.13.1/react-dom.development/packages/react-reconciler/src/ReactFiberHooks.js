@@ -170,7 +170,9 @@
     // so memoizedState would be null during updates and mounts.
 
     {
+      // 
       if (current !== null && current.memoizedState !== null) {
+        debugger;
         ReactCurrentDispatcher.current = HooksDispatcherOnUpdateInDEV;
       } else if (hookTypesDev !== null) {
         // This dispatcher handles an edge case where a component is updating,

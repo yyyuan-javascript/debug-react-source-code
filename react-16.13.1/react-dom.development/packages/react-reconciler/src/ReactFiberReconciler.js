@@ -73,13 +73,15 @@
   function createContainer(containerInfo, tag, hydrate, hydrationCallbacks) {
     return createFiberRoot(containerInfo, tag, hydrate);
   }
+  // 更新container
   function updateContainer(element, container, parentComponent, callback) {
     {
       onScheduleRoot(container, element);
     }
 
     var current$1 = container.current;
-    var currentTime = requestCurrentTimeForUpdate();
+    //currentTime 用于计算过期时间
+    var currentTime = requestCurrentTimeForUpdate();//1073709410
 
     {
       // $FlowExpectedError - jest isn't a global, and isn't recognized outside of tests
@@ -127,6 +129,7 @@
 
     enqueueUpdate(current$1, update);
     scheduleWork(current$1, expirationTime);
+    // 最终返回过期时间
     return expirationTime;
   }
   function getPublicRootInstance(container) {
