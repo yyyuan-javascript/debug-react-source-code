@@ -46,6 +46,7 @@
     var dispatcher = resolveDispatcher();
     return dispatcher.useRef(initialValue);
   }
+  // 首次调用useEffect方法
   function useEffect(create, deps) {
     var dispatcher = resolveDispatcher();
     return dispatcher.useEffect(create, deps);
