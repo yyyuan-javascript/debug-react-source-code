@@ -34,7 +34,7 @@
   // When true, such Hooks will always be "remounted". Only used during hot reload.
 
   var ignorePreviousDependencies = false;
-
+  // 将hookName存入数组hookTypesDev
   function mountHookTypesDev() {
     {
       var hookName = currentHookNameInDev;
@@ -52,15 +52,17 @@
       var hookName = currentHookNameInDev;
 
       if (hookTypesDev !== null) {
+        // 获取当前hooks的index
         hookTypesUpdateIndexDev++;
 
         if (hookTypesDev[hookTypesUpdateIndexDev] !== hookName) {
+          // hooks 不应该出现在分支语句中，否则会报警告
           warnOnHookMismatchInDev(hookName);
         }
       }
     }
   }
-
+  // 检查依赖是否是数组
   function checkDepsAreArrayDev(deps) {
     {
       if (deps !== undefined && deps !== null && !Array.isArray(deps)) {
@@ -170,7 +172,7 @@
     // so memoizedState would be null during updates and mounts.
 
     {
-      // 
+      // ReactCurrentDispatcher.current的判断依据
       if (current !== null && current.memoizedState !== null) {
         debugger;
         ReactCurrentDispatcher.current = HooksDispatcherOnUpdateInDEV;
@@ -306,7 +308,7 @@
 
     didScheduleRenderPhaseUpdate = false;
   }
-
+// 新建hook，将hook追加到currentlyRenderingFiber$1.memoizedState末尾，并作为workInProgressHook返回
   function mountWorkInProgressHook() {
     var hook = {
       memoizedState: null,
@@ -646,10 +648,10 @@
     var componentUpdateQueue = currentlyRenderingFiber$1.updateQueue;
 
     if (componentUpdateQueue === null) {
-      // 创建函数组件更新队列挂载到work-in-process fiber的updateQueue上
+      // 创建空的函数组件更新队列
       componentUpdateQueue = createFunctionComponentUpdateQueue();
       currentlyRenderingFiber$1.updateQueue = componentUpdateQueue;
-      // 将第一个effect加入循环链表
+      // 将新创建的effect加入循环链表
       componentUpdateQueue.lastEffect = effect.next = effect;
     } else {
       var lastEffect = componentUpdateQueue.lastEffect;
@@ -664,7 +666,7 @@
         componentUpdateQueue.lastEffect = effect;
       }
     }
-
+// 返回新创建的effect
     return effect;
   }
 
@@ -691,8 +693,9 @@
   // 创建一个新的hook,添加到hook链表末尾并返回作为workInProcessHook
     var hook = mountWorkInProgressHook();
     var nextDeps = deps === undefined ? null : deps;
-    // 
+    // 将currentlyRenderingFiber$1.effectTag上fiberEffectTag的标志位置为1
     currentlyRenderingFiber$1.effectTag |= fiberEffectTag;
+    // 创建新的effect,加到currentlyRenderingFiber$1.updateQueue.lastEffect上
     hook.memoizedState = pushEffect(HasEffect | hookEffectTag, create, undefined, nextDeps);
   }
 
