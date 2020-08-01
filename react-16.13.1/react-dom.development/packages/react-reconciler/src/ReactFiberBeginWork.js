@@ -791,6 +791,7 @@
 
       setIsRendering(true);
       ReactCurrentOwner$1.current = workInProgress;
+      //  workInProgress是什么？？ Component: App 函数组件
       value = renderWithHooks(null, workInProgress, Component, props, context, renderExpirationTime);
       setIsRendering(false);
     } // React DevTools reads this flag.

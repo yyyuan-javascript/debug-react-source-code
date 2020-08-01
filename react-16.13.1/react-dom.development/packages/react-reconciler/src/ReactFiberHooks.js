@@ -133,7 +133,7 @@
         error('The final argument passed to %s changed size between renders. The ' + 'order and size of this array must remain constant.\n\n' + 'Previous: %s\n' + 'Incoming: %s', currentHookNameInDev, "[" + prevDeps.join(', ') + "]", "[" + nextDeps.join(', ') + "]");
       }
     }
-
+    //遍历依赖数组，用ObjectIs来比较依赖deps是否发生变化
     for (var i = 0; i < prevDeps.length && i < nextDeps.length; i++) {
       if (objectIs(nextDeps[i], prevDeps[i])) {
         continue;
@@ -182,6 +182,7 @@
         // This dispatcher does that.
         ReactCurrentDispatcher.current = HooksDispatcherOnMountWithHookTypesInDEV;
       } else {
+        // 第一个hook?还是第一次执行某个hook??
         ReactCurrentDispatcher.current = HooksDispatcherOnMountInDEV;
       }
     }
@@ -333,7 +334,8 @@
     // use as a base. When we reach the end of the base list, we must switch to
     // the dispatcher used for mounts.
     var nextCurrentHook;
-
+    // currentHook是useEffect的上一个hook????有什么属性可以判断？？？？或者如何在流程中标志出来？
+    // hook是单向链表，怎样从第一个hook开始更新？？？
     if (currentHook === null) {
       var current = currentlyRenderingFiber$1.alternate;
 
@@ -343,6 +345,7 @@
         nextCurrentHook = null;
       }
     } else {
+      // nextCurrentHook保存上个渲染或更新流程中的currentHook的next???
       nextCurrentHook = currentHook.next;
     }
 
@@ -356,6 +359,7 @@
     }
 
     if (nextWorkInProgressHook !== null) {
+      // re-render 的情况？？？
       // There's already a work-in-progress. Reuse it.
       workInProgressHook = nextWorkInProgressHook;
       nextWorkInProgressHook = workInProgressHook.next;
@@ -367,8 +371,10 @@
           throw Error( "Rendered more hooks than during the previous render." );
         }
       }
-
+// nextCurrentHook是上个更新或者渲染生成的对应当前workInProgressHook的hook
+      // 更新currentHook这个全局变量
       currentHook = nextCurrentHook;
+      //直接用上次渲染的hook的属性生成一个新的hook
       var newHook = {
         memoizedState: currentHook.memoizedState,
         baseState: currentHook.baseState,
@@ -685,22 +691,27 @@
   // 创建一个新的hook,添加到hook链表末尾并返回作为workInProcessHook
     var hook = mountWorkInProgressHook();
     var nextDeps = deps === undefined ? null : deps;
+    // 
     currentlyRenderingFiber$1.effectTag |= fiberEffectTag;
     hook.memoizedState = pushEffect(HasEffect | hookEffectTag, create, undefined, nextDeps);
   }
 
   function updateEffectImpl(fiberEffectTag, hookEffectTag, create, deps) {
+    // 更新全局变量currentHook和workInProgressHook
     var hook = updateWorkInProgressHook();
     var nextDeps = deps === undefined ? null : deps;
     var destroy = undefined;
 
     if (currentHook !== null) {
+      //hook 的memoizedState是在哪里被赋值？？？
       var prevEffect = currentHook.memoizedState;
+      // destroy 是useEffect第一参数，传入的函数中返回的函数
+      // destroy取的是上次更新的currentHook中的destroy
       destroy = prevEffect.destroy;
 
       if (nextDeps !== null) {
         var prevDeps = prevEffect.deps;
-
+// 比较本次和上次更新中useEffect的依赖变量是否变化
         if (areHookInputsEqual(nextDeps, prevDeps)) {
           pushEffect(hookEffectTag, create, destroy, nextDeps);
           return;
