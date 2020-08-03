@@ -149,6 +149,7 @@
 
   function renderWithHooks(current, workInProgress, Component, props, secondArg, nextRenderExpirationTime) {
     renderExpirationTime = nextRenderExpirationTime;
+    // 全局变量currentlyRenderingFiber$1 指向 workInProgress.
     currentlyRenderingFiber$1 = workInProgress;
 
     {
@@ -174,7 +175,6 @@
     {
       // ReactCurrentDispatcher.current的判断依据
       if (current !== null && current.memoizedState !== null) {
-        debugger;
         ReactCurrentDispatcher.current = HooksDispatcherOnUpdateInDEV;
       } else if (hookTypesDev !== null) {
         // This dispatcher handles an edge case where a component is updating,
@@ -188,7 +188,7 @@
         ReactCurrentDispatcher.current = HooksDispatcherOnMountInDEV;
       }
     }
-
+// Component 是函数组件App
     var children = Component(props, secondArg); // Check if there was a render phase update
 
     if (workInProgress.expirationTime === renderExpirationTime) {
@@ -696,6 +696,7 @@
     // 将currentlyRenderingFiber$1.effectTag上fiberEffectTag的标志位置为1
     currentlyRenderingFiber$1.effectTag |= fiberEffectTag;
     // 创建新的effect,加到currentlyRenderingFiber$1.updateQueue.lastEffect上
+    // 将pushEffect返回的新effect挂在workInProgressHook的memoizedState上
     hook.memoizedState = pushEffect(HasEffect | hookEffectTag, create, undefined, nextDeps);
   }
 
@@ -716,13 +717,16 @@
         var prevDeps = prevEffect.deps;
 // 比较本次和上次更新中useEffect的依赖变量是否变化
         if (areHookInputsEqual(nextDeps, prevDeps)) {
+          //如果依赖没有发生改变，不会将hasEffect的标志位置1，调用pushEffect
           pushEffect(hookEffectTag, create, destroy, nextDeps);
           return;
         }
       }
     }
-
+// 将workInProgressHook的effectTag的fiberEffectTag标志位置1，什么时候会被用到？？？
     currentlyRenderingFiber$1.effectTag |= fiberEffectTag;
+    // 如果依赖发生变化，将hasEffect的标志位置1，调用pushEffect，并赋值给workInProgressHook的memoizedState
+   // hook的memoizedState是用来保存需要更新的effect？？？？
     hook.memoizedState = pushEffect(HasEffect | hookEffectTag, create, destroy, nextDeps);
   }
 
@@ -1061,7 +1065,7 @@
           warnIfNotCurrentlyActingUpdatesInDev(fiber);
         }
       }
-
+      // 调度，创建一个更新任务，执行 fiber 的渲染
       scheduleWork(fiber, expirationTime);
     }
   }
