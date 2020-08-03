@@ -1729,12 +1729,13 @@
         commitBeforeMutationLifeCycles(current, nextEffect);
         resetCurrentFiber();
       }
-
+      // useEffect 的 effectTag曾传入Passive
       if ((effectTag & Passive) !== NoEffect) {
         // If there are passive effects, schedule a callback to flush at
         // the earliest opportunity.
         if (!rootDoesHavePassiveEffects) {
           rootDoesHavePassiveEffects = true;
+          // NormalPriority 不是最高优先级，会推迟执行 flushPassiveEffects
           scheduleCallback(NormalPriority, function () {
             flushPassiveEffects();
             return null;
