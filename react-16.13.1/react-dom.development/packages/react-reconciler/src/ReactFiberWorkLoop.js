@@ -1417,11 +1417,13 @@
   }
 
   function commitRoot(root) {
+    // 获取render时优先级
     var renderPriorityLevel = getCurrentPriorityLevel();
+    // 以最高优先级ImmediatePriority执行第二个参数fn，fn会被立即执行
     runWithPriority$1(ImmediatePriority, commitRootImpl.bind(null, root, renderPriorityLevel));
     return null;
   }
-
+// 执行effectList上的更新,整个过程分为 before mutation 和 layout 三个阶段，每个阶段执行不同的更新任务。当然，这个阶段有可能会产生新的更新，需要将这些更新重新调度。
   function commitRootImpl(root, renderPriorityLevel) {
     do {
       // `flushPassiveEffects` will call `flushSyncUpdateQueue` at the end, which
@@ -1430,6 +1432,7 @@
       // no more pending effects.
       // TODO: Might be better if `flushPassiveEffects` did not automatically
       // flush synchronous work at the end, to avoid factoring hazards like this.
+      // 清除effect上的副作用
       flushPassiveEffects();
     } while (rootWithPendingPassiveEffects !== null);
 
@@ -1440,14 +1443,14 @@
         throw Error( "Should not already be working." );
       }
     }
-
+    // 缓存 root上的finishedWork和finishedExpirationTime，这个是前面调度更新的结果
     var finishedWork = root.finishedWork;
     var expirationTime = root.finishedExpirationTime;
 
     if (finishedWork === null) {
       return null;
     }
-
+    // reset 
     root.finishedWork = null;
     root.finishedExpirationTime = NoWork;
 
@@ -1481,7 +1484,7 @@
 
 
     var firstEffect;
-
+// 如果finishedWork本身也有effect,将其放到effect链的最后
     if (finishedWork.effectTag > PerformedWork) {
       // A fiber's effect list consists only of its children, not itself. So if
       // the root has an effect, we need to add it to the end of the list. The
@@ -1497,7 +1500,7 @@
       // There is no effect on the root.
       firstEffect = finishedWork.firstEffect;
     }
-
+// 完整的effect链组装完成，firstEffect是第一个需要被更新的fiber节点
     if (firstEffect !== null) {
       var prevExecutionContext = executionContext;
       executionContext |= CommitContext;
@@ -1509,7 +1512,11 @@
       // The first phase a "before mutation" phase. We use this phase to read the
       // state of the host tree right before we mutate it. This is where
       // getSnapshotBeforeUpdate is called.
-
+      // 提交阶段分为几个子阶段 
+      // 根据子阶段将effect链做了分隔，所有的mutation(突变)effect都在layout effects之前执行。
+      // 第一个子阶段是before mutation阶段，在这个阶段React会读取fiber树的state
+      // 这个阶段调用 getSnapshotBeforeUpdate 方法
+      // ------------- before mutation 阶段开始  -----------------
       startCommitSnapshotEffectsTimer();
       prepareForCommit(root.containerInfo);
       nextEffect = firstEffect;
@@ -1533,14 +1540,14 @@
       } while (nextEffect !== null);
 
       stopCommitSnapshotEffectsTimer();
-
+      // ------------- before mutation 阶段结束  -----------------
       {
         // Mark the current commit time to be shared by all Profilers in this
         // batch. This enables them to be grouped later.
         recordCommitTime();
       } // The next phase is the mutation phase, where we mutate the host tree.
 
-
+// ----------------  mutation 阶段开始  --------------------
       startCommitHostEffectsTimer();
       nextEffect = firstEffect;
 
@@ -1564,6 +1571,7 @@
       } while (nextEffect !== null);
 
       stopCommitHostEffectsTimer();
+      // ----------------  mutation 阶段结束  --------------------
       resetAfterCommit(root.containerInfo); // The work-in-progress tree is now the current tree. This must come after
       // the mutation phase, so that the previous tree is still current during
       // componentWillUnmount, but before the layout phase, so that the finished
@@ -1572,7 +1580,8 @@
       root.current = finishedWork; // The next phase is the layout phase, where we call effects that read
       // the host tree after it's been mutated. The idiomatic use case for this is
       // layout, but class component lifecycles also fire here for legacy reasons.
-
+// ----------------  layout 阶段开始  --------------------
+    // 这个阶段会触发所有组件的生命周期(lifecycles)的提交
       startCommitLifeCyclesTimer();
       nextEffect = firstEffect;
 
@@ -1596,6 +1605,7 @@
       } while (nextEffect !== null);
 
       stopCommitLifeCyclesTimer();
+       // ----------------  layout 阶段结束  --------------------
       nextEffect = null; // Tell Scheduler to yield at the end of the frame, so the browser has an
       // opportunity to paint.
 
@@ -1606,7 +1616,7 @@
       }
 
       executionContext = prevExecutionContext;
-    } else {
+    } else {// firstEffect === null
       // No effects.
       root.current = finishedWork; // Measure these anyway so the flamegraph explicitly shows that there were
       // no effects.
@@ -1857,6 +1867,7 @@
     if (pendingPassiveEffectsRenderPriority !== NoPriority) {
       var priorityLevel = pendingPassiveEffectsRenderPriority > NormalPriority ? NormalPriority : pendingPassiveEffectsRenderPriority;
       pendingPassiveEffectsRenderPriority = NoPriority;
+      // 用priorityLevel作为优先级执行回调flushPassiveEffectsImpl
       return runWithPriority$1(priorityLevel, flushPassiveEffectsImpl);
     }
   }
