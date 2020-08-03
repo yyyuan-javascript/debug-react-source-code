@@ -103,7 +103,7 @@
 
     }
   }
-
+  // 以reactPriorityLevel为优先级执行fn
   function runWithPriority$1(reactPriorityLevel, fn) {
     var priorityLevel = reactPriorityToSchedulerPriority(reactPriorityLevel);
     return Scheduler_runWithPriority(priorityLevel, fn);
