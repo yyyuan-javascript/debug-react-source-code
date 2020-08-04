@@ -1548,6 +1548,7 @@
       } // The next phase is the mutation phase, where we mutate the host tree.
 
 // ----------------  mutation 阶段开始  --------------------
+// 提交HostComponent的side effect，也就是DOM节点的操作(增删改)
       startCommitHostEffectsTimer();
       nextEffect = firstEffect;
 
@@ -1746,6 +1747,7 @@
         if (!rootDoesHavePassiveEffects) {
           rootDoesHavePassiveEffects = true;
           // NormalPriority 不是最高优先级，会推迟执行 flushPassiveEffects
+          // flushPassiveEffects 是用于处理副作用的。最终会遍历effectList执行每个effect的create和destory函数。
           scheduleCallback(NormalPriority, function () {
             flushPassiveEffects();
             return null;
@@ -1757,6 +1759,7 @@
     }
   }
 
+  // 提交HostComponent的side effect，也就是DOM节点的操作(增删改)
   function commitMutationEffects(root, renderPriorityLevel) {
     // TODO: Should probably move the bulk of this function to commitWork.
     while (nextEffect !== null) {
