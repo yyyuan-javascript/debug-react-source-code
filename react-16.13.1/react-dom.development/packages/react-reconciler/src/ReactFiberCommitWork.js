@@ -995,6 +995,7 @@
           // This prevents sibling component effects from interfering with each other,
           // e.g. a destroy function in one component should never override a ref set
           // by a create function in another component during the same commit.
+          // 执行useLayoutEffect的destroy函数
           commitHookEffectListUnmount(Layout | HasEffect, finishedWork);
           return;
         }

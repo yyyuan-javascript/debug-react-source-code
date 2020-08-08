@@ -2137,7 +2137,7 @@
     workInProgress.expirationTime = NoWork;
 
     switch (workInProgress.tag) {
-      case IndeterminateComponent:
+      case IndeterminateComponent:// 初次渲染不能区分组件类型的时候
         {
           return mountIndeterminateComponent(current, workInProgress, workInProgress.type, renderExpirationTime);
         }
