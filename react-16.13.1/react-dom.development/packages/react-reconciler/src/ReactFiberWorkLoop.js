@@ -1179,7 +1179,11 @@
       workInProgress = performUnitOfWork(workInProgress);
     }
   }
-
+/**
+ * @description: performUnitOfWork 函数从 workInProgress 树接收一个 fiber 节点，
+ * 并通过调用 beginWork 开始工作，此函数将启动 fiber 需要执行的所有活动
+ * @param {fiber} unitOfWork 
+ */
   function performUnitOfWork(unitOfWork) {
     // The current, flushed, state of this fiber is the alternate. Ideally
     // nothing should rely on this, but relying on it here means that we don't
@@ -1188,7 +1192,8 @@
     startWorkTimer(unitOfWork);
     setCurrentFiber(unitOfWork);
     var next;
-
+// profile是什么？
+// 函数 beginWork 总是返回指向在循环中处理的下一个 child 的指针，或返回 null
     if ( (unitOfWork.mode & ProfileMode) !== NoMode) {
       startProfilerTimer(unitOfWork);
       next = beginWork$1(current, unitOfWork, renderExpirationTime$1);
@@ -1200,15 +1205,20 @@
     resetCurrentFiber();
     unitOfWork.memoizedProps = unitOfWork.pendingProps;
 
-    if (next === null) {
+    if (next === null) {//next不存在，代表unitOfWork没有child
       // If this doesn't spawn new work, complete the current work.
+      // fiber没有child时，完成当前fiber的工作
       next = completeUnitOfWork(unitOfWork);
     }
 
     ReactCurrentOwner$2.current = null;
     return next;
   }
-
+/**
+ * @description 完成当前节点的工作：
+ * 1.
+ * @param {*} unitOfWork 
+ */
   function completeUnitOfWork(unitOfWork) {
     // Attempt to complete the current unit of work, then move to the next
     // sibling. If there are no more siblings, return to the parent fiber.
@@ -1219,6 +1229,7 @@
       // nothing should rely on this, but relying on it here means that we don't
       // need an additional field on the work in progress.
       var current = workInProgress.alternate;
+      // 当前fiber的父元素
       var returnFiber = workInProgress.return; // Check if the work completed or if something threw.
 
       if ((workInProgress.effectTag & Incomplete) === NoEffect) {
