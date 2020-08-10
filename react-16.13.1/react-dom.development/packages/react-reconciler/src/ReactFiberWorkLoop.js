@@ -1181,7 +1181,7 @@
   }
 /**
  * @description: performUnitOfWork 函数从 workInProgress 树接收一个 fiber 节点，
- * 并通过调用 beginWork 开始工作，此函数将启动 fiber 需要执行的所有活动
+ * 并通过调用 beginWork 开始工作，此函数将启动 fiber 需要执行的所有work
  * @param {fiber} unitOfWork 
  */
   function performUnitOfWork(unitOfWork) {
@@ -1192,7 +1192,9 @@
     startWorkTimer(unitOfWork);
     setCurrentFiber(unitOfWork);
     var next;
-// profile是什么？
+// React 16.5 添加了对开发者工具的 Profiler 插件的支持。
+// 该插件使用了 React 的 Profiler 实验性 API 来收集所有组件渲染的耗时，
+// 目的是为了找出 React 应用程序的性能瓶颈。
 // 函数 beginWork 总是返回指向在循环中处理的下一个 child 的指针，或返回 null
     if ( (unitOfWork.mode & ProfileMode) !== NoMode) {
       startProfilerTimer(unitOfWork);
@@ -1209,7 +1211,7 @@
       // If this doesn't spawn new work, complete the current work.
       // fiber没有child时，完成当前fiber的工作
       next = completeUnitOfWork(unitOfWork);
-    }
+    }// next存在，代表unitOfWork有child,需要继续处理child
 
     ReactCurrentOwner$2.current = null;
     return next;
@@ -1228,14 +1230,18 @@
       // The current, flushed, state of this fiber is the alternate. Ideally
       // nothing should rely on this, but relying on it here means that we don't
       // need an additional field on the work in progress.
+      // 获取current节点
       var current = workInProgress.alternate;
       // 当前fiber的父元素
-      var returnFiber = workInProgress.return; // Check if the work completed or if something threw.
-
+      var returnFiber = workInProgress.return;  
+      //Incomplete表示捕获到该节点抛出的 error
+      //如果该节点没有异常抛出的话，即可正常执行
       if ((workInProgress.effectTag & Incomplete) === NoEffect) {
         setCurrentFiber(workInProgress);
         var next = void 0;
 
+        // 1. 完成该节点的work（completeWork）
+        // 2. ProfileMode下会统计组件渲染耗时
         if ( (workInProgress.mode & ProfileMode) === NoMode) {
           next = completeWork(current, workInProgress, renderExpirationTime$1);
         } else {
@@ -1741,11 +1747,13 @@
   }
 
   function commitBeforeMutationEffects() {
+    // 循环effect
     while (nextEffect !== null) {
       var effectTag = nextEffect.effectTag;
 
       if ((effectTag & Snapshot) !== NoEffect) {
         setCurrentFiber(nextEffect);
+        // 记录effect数量
         recordEffect();
         var current = nextEffect.alternate;
         commitBeforeMutationLifeCycles(current, nextEffect);
