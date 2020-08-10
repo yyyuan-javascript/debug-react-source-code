@@ -4,7 +4,7 @@ function App() {
 const [count, setCount] = useState(0);
 const handleScroll = () => {
     setCount(count+1);
-};
+};debugger;
 useEffect(()=>{
     // 每次更新都会被触发
     window.addEventListener('scroll',handleScroll);

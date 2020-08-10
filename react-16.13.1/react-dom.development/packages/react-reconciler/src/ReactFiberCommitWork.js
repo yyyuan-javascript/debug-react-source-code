@@ -96,13 +96,14 @@
   function commitBeforeMutationLifeCycles(current, finishedWork) {
     switch (finishedWork.tag) {
       case FunctionComponent:
+        // 函数组件直接返回
       case ForwardRef:
       case SimpleMemoComponent:
       case Block:
         {
           return;
         }
-
+// 类组件执行
       case ClassComponent:
         {
           if (finishedWork.effectTag & Snapshot) {

@@ -1217,8 +1217,10 @@
     return next;
   }
 /**
- * @description 完成当前节点的工作：
- * 1.
+ * @description 
+ * 1.完成当前节点的工作：
+ * 2.执行resetChildExpirationTime，获取优先级最高的childExpirationTime
+ * 3.创建effect链
  * @param {*} unitOfWork 
  */
   function completeUnitOfWork(unitOfWork) {
@@ -1235,7 +1237,7 @@
       // 当前fiber的父元素
       var returnFiber = workInProgress.return;  
       //Incomplete表示捕获到该节点抛出的 error
-      //如果该节点没有异常抛出的话，即可正常执行
+      //如果该节点没有抛出异常
       if ((workInProgress.effectTag & Incomplete) === NoEffect) {
         setCurrentFiber(workInProgress);
         var next = void 0;
@@ -1253,8 +1255,9 @@
 
         stopWorkTimer(workInProgress);
         resetCurrentFiber();
+        // resetChildExpirationTime的作用是更新该节点的work时长和获取优先级最高的子节点的expirationTime
         resetChildExpirationTime(workInProgress);
-
+      // 如果next存在，则表示该节点在这次更新完成后，产生了新的更新，那么就返回该next，并将其作为completeUnitOfWork()的参数，再次执行
         if (next !== null) {
           // Completing this fiber spawned new work. Work on that next.
           return next;
@@ -1265,6 +1268,7 @@
           // Append all the effects of the subtree and this fiber onto the effect
           // list of the parent. The completion order of the children affects the
           // side-effect order.
+          // 将workInProgress的所有子树的effect挂在workInProgress的父节点的effect链上
           if (returnFiber.firstEffect === null) {
             returnFiber.firstEffect = workInProgress.firstEffect;
           }
@@ -1286,7 +1290,7 @@
           var effectTag = workInProgress.effectTag; // Skip both NoWork and PerformedWork tags when creating the effect
           // list. PerformedWork effect is read by React DevTools but shouldn't be
           // committed.
-
+          // 将workInProgress自身的effect挂在workInProgress的父节点的effect链上
           if (effectTag > PerformedWork) {
             if (returnFiber.lastEffect !== null) {
               returnFiber.lastEffect.nextEffect = workInProgress;
@@ -1297,7 +1301,7 @@
             returnFiber.lastEffect = workInProgress;
           }
         }
-      } else {
+      } else { // 如果当前节点抛出异常
         // This fiber did not complete because something threw. Pop values off
         // the stack without entering the complete phase. If this is a boundary,
         // capture values if possible.
@@ -1755,7 +1759,10 @@
         setCurrentFiber(nextEffect);
         // 记录effect数量
         recordEffect();
+        // 获取effect对应的current, 因为effect链是由workInProgress Fiber拼成的
         var current = nextEffect.alternate;
+        // fiber类型是ClassComponent的话，执行getSnapshotBeforeUpdate生命周期api
+        // function component 直接return
         commitBeforeMutationLifeCycles(current, nextEffect);
         resetCurrentFiber();
       }
@@ -1784,11 +1791,11 @@
     while (nextEffect !== null) {
       setCurrentFiber(nextEffect);
       var effectTag = nextEffect.effectTag;
-
+      //如果有文字节点，则将value 置为''，为什么？？
       if (effectTag & ContentReset) {
         commitResetTextContent(nextEffect);
       }
-
+      //将 ref 的指向置为 null, 为什么？？？
       if (effectTag & Ref) {
         var current = nextEffect.alternate;
 
@@ -1800,30 +1807,33 @@
       // bitmap value, we remove the secondary effects from the effect tag and
       // switch on that value.
 
-
+//以下情况是针对 替换(Placement)、更新(Update)、 删除(Deletion)和Hydrating 的 effectTag 的处理
       var primaryEffectTag = effectTag & (Placement | Update | Deletion | Hydrating);
 
       switch (primaryEffectTag) {
+        // 插入新节点
         case Placement:
           {
+            // Placement：对当前节点及其子节点执行插入操作
             commitPlacement(nextEffect); // Clear the "placement" from effect tag so that we know that this is
             // inserted, before any life-cycles like componentDidMount gets called.
             // TODO: findDOMNode doesn't rely on this any more but isMounted does
             // and isMounted is deprecated anyway so we should be able to kill this.
-
+            // 从effectTag中去掉Placement tag标志
             nextEffect.effectTag &= ~Placement;
             break;
           }
 
         case PlacementAndUpdate:
           {
-            // Placement
+            // Placement：对当前节点及其子节点执行插入操作
             commitPlacement(nextEffect); // Clear the "placement" from effect tag so that we know that this is
             // inserted, before any life-cycles like componentDidMount gets called.
-
+            // 从effectTag中去掉Placement tag标志
             nextEffect.effectTag &= ~Placement; // Update
 
             var _current = nextEffect.alternate;
+            //对 DOM 节点上的属性进行更新
             commitWork(_current, nextEffect);
             break;
           }
@@ -1839,6 +1849,7 @@
             nextEffect.effectTag &= ~Hydrating; // Update
 
             var _current2 = nextEffect.alternate;
+            //对 DOM 节点上的属性进行更新
             commitWork(_current2, nextEffect);
             break;
           }
@@ -1846,12 +1857,14 @@
         case Update:
           {
             var _current3 = nextEffect.alternate;
+            //对 DOM 节点上的属性进行更新
             commitWork(_current3, nextEffect);
             break;
           }
 
         case Deletion:
           {
+            //删除节点
             commitDeletion(root, nextEffect, renderPriorityLevel);
             break;
           }
