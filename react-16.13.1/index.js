@@ -1,17 +1,31 @@
-const {useState, useEffect} = React;
+const {useState, useEffect, useLayoutEffect} = React;
 
 function App() {
 const [count, setCount] = useState(0);
 const handleScroll = () => {
     setCount(count+1);
-};debugger;
-useEffect(()=>{
+};
+// useEffect(()=>{
+//     // 每次更新都会被触发
+//     window.addEventListener('scroll',handleScroll);
+// return ()=>{
+//     window.removeEventListener('scroll',handleScroll);
+// }
+// },[count]);
+useLayoutEffect(()=>{
     // 每次更新都会被触发
     window.addEventListener('scroll',handleScroll);
 return ()=>{
     window.removeEventListener('scroll',handleScroll);
 }
 },[count]);
+// useLayoutEffect(()=>{
+//     // 每次更新都会被触发
+//     window.addEventListener('scroll',handleScroll);
+// return ()=>{
+//     window.removeEventListener('scroll',handleScroll);
+// }
+// },[count]);
 return <div className="wrapper">
     <div className="inner">
     {`It's the ${count} times to trigger scroll.`}

@@ -23,7 +23,7 @@
    * @param {*} context The context to use when calling the function
    * @param {...*} args Arguments for function
    */
-
+// 用于捕获错误，在生产环境中用try catch 实现
   function invokeGuardedCallback(name, func, context, a, b, c, d, e, f) {
     hasError = false;
     caughtError = null;

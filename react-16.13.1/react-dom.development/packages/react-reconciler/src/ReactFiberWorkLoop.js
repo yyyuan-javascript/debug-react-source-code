@@ -1544,6 +1544,7 @@
 
       do {
         {
+          // invokeGuardedCallback用于捕获错误，在生产环境中用try catch 实现
           invokeGuardedCallback(null, commitBeforeMutationEffects, null);
 
           if (hasCaughtError()) {

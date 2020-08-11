@@ -737,7 +737,8 @@
         warnIfNotCurrentlyActingEffectsInDEV(currentlyRenderingFiber$1);
       }
     }
-
+// fibeEffect传入Update | Passive,代表当前fiber需要更新和有useEffect; 
+// hookEffect传入Passive$1，代表hookEffect中的useEffect
     return mountEffectImpl(Update | Passive, Passive$1, create, deps);
   }
 
@@ -753,6 +754,9 @@
   }
 
   function mountLayoutEffect(create, deps) {
+    // 与mountEffect相同均调用mountEffectImpl，区别在于传入的tag不同。
+    // fiberEffect 少传了Passive的标志；
+    // hookEffect传入Layout，代表hookEffect中的useLayoutEffect
     return mountEffectImpl(Update, Layout, create, deps);
   }
 
