@@ -135,7 +135,7 @@
         error('The final argument passed to %s changed size between renders. The ' + 'order and size of this array must remain constant.\n\n' + 'Previous: %s\n' + 'Incoming: %s', currentHookNameInDev, "[" + prevDeps.join(', ') + "]", "[" + nextDeps.join(', ') + "]");
       }
     }
-    //遍历依赖数组，用ObjectIs来比较依赖deps是否发生变化
+    //遍历依赖数组，用ObjectIs来比较对应的依赖的值是否发生变化
     for (var i = 0; i < prevDeps.length && i < nextDeps.length; i++) {
       if (objectIs(nextDeps[i], prevDeps[i])) {
         continue;
@@ -174,7 +174,7 @@
 
     {
       // ReactCurrentDispatcher.current的判断依据
-      if (current !== null && current.memoizedState !== null) {
+      if (current !== null && current.memoizedState !== null) {// 非初次渲染
         ReactCurrentDispatcher.current = HooksDispatcherOnUpdateInDEV;
       } else if (hookTypesDev !== null) {
         // This dispatcher handles an edge case where a component is updating,
@@ -183,14 +183,13 @@
         // but with the extra DEV validation to ensure hooks ordering hasn't changed.
         // This dispatcher does that.
         ReactCurrentDispatcher.current = HooksDispatcherOnMountWithHookTypesInDEV;
-      } else {
-        // 第一个hook?还是第一次执行某个hook??
+      } else {// 初次渲染
         ReactCurrentDispatcher.current = HooksDispatcherOnMountInDEV;
       }
     }
-// Component 是函数组件App
+    // Component 是函数组件App，调用函数组件获得children;
     var children = Component(props, secondArg); // Check if there was a render phase update
-
+    // re-render的情况
     if (workInProgress.expirationTime === renderExpirationTime) {
       // Keep rendering in a loop for as long as render phase updates continue to
       // be scheduled. Use a counter to prevent infinite loops.
@@ -336,9 +335,9 @@
     // use as a base. When we reach the end of the base list, we must switch to
     // the dispatcher used for mounts.
     var nextCurrentHook;
-    // currentHook是useEffect的上一个hook????有什么属性可以判断？？？？或者如何在流程中标志出来？
-    // hook是单向链表，怎样从第一个hook开始更新？？？
-    if (currentHook === null) {
+    // 与mountWorkInProgressHook创建新hook不同，
+    // 这里是从currentFiber的memoizedState上取hookList,通过next指针找到当前的hook
+    if (currentHook === null) {// 如果是第一个hook,先找currentFiber,然后从currentFiber的memoizedState上取第一个hook
       var current = currentlyRenderingFiber$1.alternate;
 
       if (current !== null) {
@@ -346,22 +345,19 @@
       } else {
         nextCurrentHook = null;
       }
-    } else {
-      // nextCurrentHook保存上个渲染或更新流程中的currentHook的next???
+    } else {// 非第一个hook的情况
       nextCurrentHook = currentHook.next;
     }
 
     var nextWorkInProgressHook;
 
     if (workInProgressHook === null) {
-      // currentlyRenderingFiber$1.memoizedState 什么时候置为空的？
       nextWorkInProgressHook = currentlyRenderingFiber$1.memoizedState;
     } else {
       nextWorkInProgressHook = workInProgressHook.next;
     }
-
+    // re-render 的情况,直接使用nextWorkInProgressHook
     if (nextWorkInProgressHook !== null) {
-      // re-render 的情况？？？
       // There's already a work-in-progress. Reuse it.
       workInProgressHook = nextWorkInProgressHook;
       nextWorkInProgressHook = workInProgressHook.next;
@@ -373,10 +369,10 @@
           throw Error( "Rendered more hooks than during the previous render." );
         }
       }
-// nextCurrentHook是上个更新或者渲染生成的对应当前workInProgressHook的hook
+      // nextCurrentHook是上个更新或者渲染生成的对应当前workInProgressHook的hook
       // 更新currentHook这个全局变量
       currentHook = nextCurrentHook;
-      //直接用上次渲染的hook的属性生成一个新的hook
+      //直接用currentFiber上的currentHook的属性生成一个新的hook
       var newHook = {
         memoizedState: currentHook.memoizedState,
         baseState: currentHook.baseState,
@@ -707,15 +703,14 @@
     var destroy = undefined;
 
     if (currentHook !== null) {
-      //hook 的memoizedState是在哪里被赋值？？？
       var prevEffect = currentHook.memoizedState;
       // destroy 是useEffect第一参数，传入的函数中返回的函数
       // destroy取的是上次更新的currentHook中的destroy
       destroy = prevEffect.destroy;
-
+      // 依赖数组不存在，跳过依赖比较，必然触发更新，为了优化性能可以把依赖数组加上。
       if (nextDeps !== null) {
         var prevDeps = prevEffect.deps;
-// 比较本次和上次更新中useEffect的依赖变量是否变化
+        // 比较本次和上次更新中useEffect的依赖变量是否变化
         if (areHookInputsEqual(nextDeps, prevDeps)) {
           //如果依赖没有发生改变，不会将hasEffect的标志位置1，调用pushEffect
           pushEffect(hookEffectTag, create, destroy, nextDeps);
@@ -723,10 +718,10 @@
         }
       }
     }
-// 将workInProgressHook的effectTag的fiberEffectTag标志位置1，什么时候会被用到？？？
+    // 将workInProgressHook的effectTag的fiberEffectTag标志位置1，在commit阶段会被用到。
     currentlyRenderingFiber$1.effectTag |= fiberEffectTag;
     // 如果依赖发生变化，将hasEffect的标志位置1，调用pushEffect，并赋值给workInProgressHook的memoizedState
-   // hook的memoizedState是用来保存需要更新的effect？？？？
+    // hook的memoizedState是用来保存需要更新的effect
     hook.memoizedState = pushEffect(HasEffect | hookEffectTag, create, destroy, nextDeps);
   }
 

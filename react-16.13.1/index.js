@@ -5,20 +5,13 @@ const [count, setCount] = useState(0);
 const handleScroll = () => {
     setCount(count+1);
 };
-// useEffect(()=>{
-//     // 每次更新都会被触发
-//     window.addEventListener('scroll',handleScroll);
-// return ()=>{
-//     window.removeEventListener('scroll',handleScroll);
-// }
-// },[count]);
-useLayoutEffect(()=>{
+useEffect(()=>{
     // 每次更新都会被触发
     window.addEventListener('scroll',handleScroll);
 return ()=>{
     window.removeEventListener('scroll',handleScroll);
 }
-},[count]);
+});
 // useLayoutEffect(()=>{
 //     // 每次更新都会被触发
 //     window.addEventListener('scroll',handleScroll);
@@ -48,7 +41,6 @@ handleScroll = () => {
 componentDidMount(){
     // 仅触发一次
     window.addEventListener('scroll',this.handleScroll);
-    console.log(11111);
 };
 componentWillUnmount(){
     window.removeEventListener('scroll',this.handleScroll);
