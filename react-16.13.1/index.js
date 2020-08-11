@@ -11,7 +11,7 @@ useEffect(()=>{
 return ()=>{
     window.removeEventListener('scroll',handleScroll);
 }
-});
+},[count]);
 // useLayoutEffect(()=>{
 //     // 每次更新都会被触发
 //     window.addEventListener('scroll',handleScroll);
